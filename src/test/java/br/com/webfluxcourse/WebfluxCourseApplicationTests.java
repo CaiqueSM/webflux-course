@@ -8,6 +8,7 @@ class WebfluxCourseApplicationTests {
 
     @Test
     void contextLoads() {
+        WebfluxCourseApplication.main(new String[]{});
     }
 
 }
