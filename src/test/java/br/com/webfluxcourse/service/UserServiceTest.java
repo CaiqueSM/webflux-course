@@ -88,7 +88,7 @@ class UserServiceTest {
 
         Mono<User> result = service.update("123", request);
 
-        StepVerifier.create(result).expectNextMatches(Objects::nonNull)
+        StepVerifier.create(result).expectNextMatches(user -> user != null && user.getClass() == User.class)
                 .expectComplete()
                 .verify();
 
@@ -97,5 +97,15 @@ class UserServiceTest {
 
     @Test
     void delete() {
+        User entity = User.builder().build();
+        when(repository.findAndRemove(anyString())).thenReturn(Mono.just(entity));
+
+        Mono<User> result = service.delete("123");
+
+        StepVerifier.create(result).expectNextMatches(user -> user != null && user.getClass() == User.class)
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(repository, times(1)).findAndRemove(anyString());
     }
 }
