@@ -102,6 +102,9 @@ class UserControllerImplTest {
                 .jsonPath("$.name").isEqualTo(NAME)
                 .jsonPath("$.email").isEqualTo(EMAIL)
                 .jsonPath("$.password").isEqualTo(PASSWORD);
+
+        Mockito.verify(service).findById(anyString());
+        Mockito.verify(mapper).toResponse(any(User.class));
     }
 
     @Test
@@ -119,13 +122,35 @@ class UserControllerImplTest {
                 .jsonPath("$.[0].name").isEqualTo(NAME)
                 .jsonPath("$.[0].email").isEqualTo(EMAIL)
                 .jsonPath("$.[0].password").isEqualTo(PASSWORD);
+
+        Mockito.verify(service).findAll();
+        Mockito.verify(mapper).toResponse(any(User.class));
     }
 
     @Test
+    @DisplayName("Test update endpoint with success")
     void update() {
+        when(service.update(anyString(), any(UserRequest.class))).thenReturn(Mono.just(ENTITY));
+        when(mapper.toResponse(any(User.class))).thenReturn(RESPONSE);
+
+        webTestClient.patch().uri("/users/" + ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(REQUEST))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(ID)
+                .jsonPath("$.name").isEqualTo(NAME)
+                .jsonPath("$.email").isEqualTo(EMAIL)
+                .jsonPath("$.password").isEqualTo(PASSWORD);
+
+        Mockito.verify(service).update(anyString(), any(UserRequest.class));
+        Mockito.verify(mapper).toResponse(any(User.class));
     }
 
     @Test
     void delete() {
+
     }
 }
