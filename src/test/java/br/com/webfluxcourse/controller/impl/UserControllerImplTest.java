@@ -5,6 +5,7 @@ import br.com.webfluxcourse.mapper.UserMapper;
 import br.com.webfluxcourse.model.request.UserRequest;
 import br.com.webfluxcourse.model.response.UserResponse;
 import br.com.webfluxcourse.service.UserService;
+import br.com.webfluxcourse.service.exception.ObjectNotFoundException;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -150,7 +151,27 @@ class UserControllerImplTest {
     }
 
     @Test
+    @DisplayName("Test delete endpoint with success")
     void delete() {
+        when(service.delete(anyString())).thenReturn(Mono.just(ENTITY));
+        webTestClient.delete().uri("/users/" + ID)
+                .exchange()
+                .expectStatus()
+                .isOk();
 
+        Mockito.verify(service).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("Test delete endpoint with failed")
+    void testDeleteWithFailed() {
+        when(service.delete(anyString())).thenThrow(new ObjectNotFoundException(" "));
+
+        webTestClient.delete().uri("/users/" + ID)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        Mockito.verify(service).delete(anyString());
     }
 }
