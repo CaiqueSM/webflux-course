@@ -3,6 +3,7 @@ package br.com.webfluxcourse.controller.impl;
 import br.com.webfluxcourse.entity.User;
 import br.com.webfluxcourse.mapper.UserMapper;
 import br.com.webfluxcourse.model.request.UserRequest;
+import br.com.webfluxcourse.model.response.UserResponse;
 import br.com.webfluxcourse.service.UserService;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,8 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ExtendWith(SpringExtension.class)
@@ -46,7 +49,7 @@ class UserControllerImplTest {
         UserRequest request = new UserRequest("user", "user@email.com","123");
         User entity = User.builder().build();
 
-        Mockito.when(service.save(any(UserRequest.class))).thenReturn(Mono.just(entity));
+        when(service.save(any(UserRequest.class))).thenReturn(Mono.just(entity));
 
         webTestClient.post().uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +82,23 @@ class UserControllerImplTest {
     }
 
     @Test
-    void findById() {
+    @DisplayName("Test find by id endpoint with success")
+    void findByIdWithSuccess() {
+        final var id = "123456";
+        final var response = new UserResponse(id, "name", "user@email.com", "123");
+
+        when(service.findById(anyString())).thenReturn(Mono.just(User.builder().build()));
+        when(mapper.toResponse(any(User.class))).thenReturn(response);
+
+        webTestClient.get().uri("/users/" + id)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(id)
+                .jsonPath("$.name").isEqualTo("name")
+                .jsonPath("$.email").isEqualTo("user@email.com")
+                .jsonPath("$.password").isEqualTo("123");
     }
 
     @Test
